@@ -31,6 +31,8 @@ export abstract class CanvasRenderer {
       throw new Error("Your browser doesn't support canvas");
     }
 
+    ctx.imageSmoothingEnabled = false;
+
     this.ctx = ctx;
   }
 
