@@ -1,122 +1,27 @@
-import "./style.css";
 import Phaser from "phaser";
+
+import { BackgroundTile } from "./shared";
+import { ParallaxBackground } from "./ParallaxBackground";
+import { Cat } from "./Cat";
+
+import "./style.css";
+import { Flower } from "./Flower";
 
 const gameSettings = {
   playerSpeed: 1,
+  width: 320,
+  height: 240,
 };
 
 enum Scene {
-  Loading = "loadingScene",
   Example = "exampleScene",
-}
-
-class Cat extends Phaser.Physics.Matter.Sprite {
-  private _isTouchingGround: boolean;
-
-  constructor(scene: Phaser.Scene, x: number, y: number, texture: string) {
-    super(scene.matter.world, x, y, texture, undefined, {
-      friction: 0.5,
-      mass: 1,
-    });
-
-    scene.add.existing(this);
-
-    this.setFixedRotation();
-
-    // const catSprite = scene.matter.add.sprite(10, 10, "idle", undefined, {});
-
-    scene.anims.create({
-      key: "idle_anim",
-      frames: this.anims.generateFrameNumbers("idle"),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.play("idle_anim");
-
-    this._isTouchingGround = false;
-
-    scene.matter.world.on("collisionactive", () => {
-      this._isTouchingGround = true;
-    });
-
-    scene.events.on("update", this.update, this);
-  }
-
-  get isTouchingGround() {
-    return this._isTouchingGround;
-  }
-
-  set isTouchingGround(val: boolean) {
-    this._isTouchingGround = val;
-  }
-
-  // update() {}
-}
-
-enum BackgroundTile {
-  Background = "background",
-  Far = "far",
-  Close = "close",
-}
-
-class ParallaxBackground extends Phaser.GameObjects.Group {
-  private _bg: Phaser.GameObjects.TileSprite;
-  private _far: Phaser.GameObjects.TileSprite;
-  private _close: Phaser.GameObjects.TileSprite;
-
-  constructor(scene: Phaser.Scene) {
-    const bg = scene.add.tileSprite(
-      0,
-      0,
-      Number(scene.game.config.width),
-      Number(scene.game.config.height),
-      BackgroundTile.Background
-    );
-    bg.setOrigin(0, 0);
-    bg.setScrollFactor(0);
-
-    const far = scene.add.tileSprite(
-      0,
-      0,
-      Number(scene.game.config.width),
-      Number(scene.game.config.height),
-      BackgroundTile.Far
-    );
-    far.setOrigin(0, 0);
-    far.setScrollFactor(0);
-
-    const close = scene.add.tileSprite(
-      0,
-      0,
-      Number(scene.game.config.width),
-      Number(scene.game.config.height),
-      BackgroundTile.Close
-    );
-    close.setOrigin(0, 0);
-    close.setScrollFactor(0);
-
-    super(scene, [bg, far, close]);
-
-    scene.add.existing(this);
-
-    // scene.events.on("update", this.update, this);
-
-    this._bg = bg;
-    this._close = close;
-    this._far = far;
-  }
-
-  public updateBackgroundPosition(camera: Phaser.Cameras.Scene2D.Camera) {
-    this._far.tilePositionX = camera.scrollX * 0.4;
-    this._close.tilePositionX = camera.scrollX * 0.6;
-  }
 }
 
 class Example extends Phaser.Scene {
   private _cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
   private _cat!: Cat;
   private _parallax!: ParallaxBackground;
+  private _flowers!: Flower[];
 
   constructor() {
     super(Scene.Example);
@@ -149,6 +54,12 @@ class Example extends Phaser.Scene {
       "assets/background/parallax-mountain-foreground-trees.png"
     );
     this.load.image("bg_5", "assets/background/parallax-trees.png");
+
+    this.load.image("armchair", "assets/armchair.png");
+
+    [1, 2, 3, 4, 5, 6].forEach((i) => {
+      this.load.image(`flower${i}`, `assets/flowers/flower${i}.png`);
+    });
   }
 
   create() {
@@ -163,9 +74,25 @@ class Example extends Phaser.Scene {
       friction: 0,
     });
 
+    // const flowers = this.add.group();
+
+    this._flowers = [1, 2, 3, 4, 5, 6].map(
+      (i) => new Flower(this, 50 * i, 10, `flower${i}`)
+      // const flower = this.matter.add.image(50 * i, 10, `flower${i}`);
+
+      // flowers.add(flower);
+    );
+
     // ground.scaleY = 2;
 
-    this.cameras.main.startFollow(this._cat, undefined, 0.2, 0.2, undefined, 30);
+    this.cameras.main.startFollow(
+      this._cat,
+      undefined,
+      0.2,
+      0.2,
+      undefined,
+      gameSettings.height / 4
+    );
   }
 
   movePlayerManager() {
@@ -183,6 +110,10 @@ class Example extends Phaser.Scene {
       this._cat.isTouchingGround = false;
       this._cat.applyForce(new Phaser.Math.Vector2(0, -0.02));
     }
+
+    if (this._cursorKeys.space.isDown) {
+      this._cat.attack(this._flowers);
+    }
   }
 
   update() {
@@ -193,12 +124,12 @@ class Example extends Phaser.Scene {
 
 const config = {
   type: Phaser.AUTO,
-  width: 320,
-  height: 160,
+  width: gameSettings.width,
+  height: gameSettings.height,
   backgroundColor: "#000",
   parent: "phaser-example",
   pixelArt: true,
-  zoom: 2,
+  zoom: window.innerHeight / gameSettings.height,
   physics: {
     default: "matter",
     matter: {},
