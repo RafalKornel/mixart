@@ -3,7 +3,6 @@ import Phaser from "phaser";
 export class Flower extends Phaser.Physics.Matter.Image {
   constructor(scene: Phaser.Scene, x: number, y: number, texture: string) {
     super(scene.matter.world, x, y, texture, undefined, {
-      friction: 0.5,
       mass: 1,
     });
 

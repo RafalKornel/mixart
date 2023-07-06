@@ -2,7 +2,7 @@ import Phaser from "phaser";
 
 import { BackgroundTile } from "./shared";
 import { ParallaxBackground } from "./ParallaxBackground";
-import { Cat } from "./Cat";
+import { Cat, CatState } from "./Cat";
 
 import "./style.css";
 import { Flower } from "./Flower";
@@ -20,7 +20,7 @@ enum Scene {
 class Example extends Phaser.Scene {
   private _cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
   private _cat!: Cat;
-  private _parallax!: ParallaxBackground;
+  // private _parallax!: ParallaxBackground;
   private _flowers!: Flower[];
 
   constructor() {
@@ -28,10 +28,39 @@ class Example extends Phaser.Scene {
   }
 
   preload() {
-    this.load.spritesheet("idle", "assets/idle.png", {
+    this.load.spritesheet(CatState.Idle1, `assets/cat/${CatState.Idle1}.png`, {
       frameWidth: 12,
       frameHeight: 12,
     });
+
+    this.load.spritesheet(CatState.Tap, `assets/cat/${CatState.Tap}.png`, {
+      frameWidth: 15,
+      frameHeight: 12,
+    });
+
+    this.load.spritesheet(CatState.Run, `assets/cat/${CatState.Run}.png`, {
+      frameWidth: 17,
+      frameHeight: 13,
+    });
+
+    this.load.spritesheet(CatState.Jump, `assets/cat/${CatState.Jump}.png`, {
+      frameWidth: 16,
+      frameHeight: 18,
+    });
+
+    this.load.spritesheet(CatState.Spine, `assets/cat/${CatState.Spine}.png`, {
+      frameWidth: 18,
+      frameHeight: 11,
+    });
+
+    this.load.image("terrain", "assets/terrain/tileset.png");
+
+    this.load.tilemapTiledJSON("map", "assets/terrain/terrain.json");
+
+    this.load.image(
+      "forest-background",
+      "assets/background/forest-background.png"
+    );
 
     this.load.image("block", "assets/block.png");
     this.load.image("platform", "assets/platform.png");
@@ -63,27 +92,35 @@ class Example extends Phaser.Scene {
   }
 
   create() {
-    this._parallax = new ParallaxBackground(this);
+    const background = this.add.image(-22, 0, "forest-background");
+    background.setScrollFactor(0);
+    background.setOrigin(0, 0);
 
-    this._cat = new Cat(this, 10, 10, "idle");
+    // this._parallax = new ParallaxBackground(this);
+
+    const map = this.make.tilemap({
+      key: "map",
+      tileHeight: 16,
+      tileWidth: 16,
+    });
+    const tileset = map.addTilesetImage("terrain")!;
+
+    // console.log(map);
+    console.log(tileset);
+
+    const ground = map.createLayer("ground", tileset, 0, 0)!;
+
+    ground.setCollisionByExclusion([-1], true);
+
+    this.matter.world.convertTilemapLayer(ground);
+
+    this._cat = new Cat(this, 10, 10);
 
     this._cursorKeys = this.input.keyboard?.createCursorKeys();
 
-    const ground = this.matter.add.image(100, 240, "platform", undefined, {
-      isStatic: true,
-      friction: 0,
-    });
-
-    // const flowers = this.add.group();
-
     this._flowers = [1, 2, 3, 4, 5, 6].map(
       (i) => new Flower(this, 50 * i, 10, `flower${i}`)
-      // const flower = this.matter.add.image(50 * i, 10, `flower${i}`);
-
-      // flowers.add(flower);
     );
-
-    // ground.scaleY = 2;
 
     this.cameras.main.startFollow(
       this._cat,
@@ -93,32 +130,43 @@ class Example extends Phaser.Scene {
       undefined,
       gameSettings.height / 4
     );
+
+    this.cameras.main.setBounds(0, 0, 1920, 240);
   }
 
   movePlayerManager() {
     if (!this._cursorKeys) return;
 
-    if (this._cursorKeys.left.isDown) {
-      this._cat.setVelocityX(-gameSettings.playerSpeed);
-      this._cat.setFlipX(true);
-    } else if (this._cursorKeys.right.isDown) {
-      this._cat.setVelocityX(gameSettings.playerSpeed);
-      this._cat.setFlipX(false);
+    if (this._cursorKeys.up.isDown) {
+      this._cat.jumpHandler();
     }
 
-    if (this._cursorKeys.up.isDown && this._cat.isTouchingGround) {
-      this._cat.isTouchingGround = false;
-      this._cat.applyForce(new Phaser.Math.Vector2(0, -0.02));
+    if (this._cursorKeys.left.isDown) {
+      this._cat.moveLeftHandler(-gameSettings.playerSpeed);
+    } else if (this._cursorKeys.right.isDown) {
+      this._cat.moveRightHandler(gameSettings.playerSpeed);
     }
 
     if (this._cursorKeys.space.isDown) {
-      this._cat.attack(this._flowers);
+      this._cat.attackHandler(this._flowers);
+    }
+
+    if (this._cursorKeys.down.isDown) {
+      this._cat.spineHandler();
+    }
+
+    if (
+      this._cursorKeys.left.isUp &&
+      this._cursorKeys.right.isUp &&
+      this._cat.catState === CatState.Run
+    ) {
+      this._cat.idleHandler();
     }
   }
 
   update() {
     this.movePlayerManager();
-    this._parallax.updateBackgroundPosition(this.cameras.main);
+    // this._parallax.updateBackgroundPosition(this.cameras.main);
   }
 }
 
@@ -132,7 +180,9 @@ const config = {
   zoom: window.innerHeight / gameSettings.height,
   physics: {
     default: "matter",
-    matter: {},
+    matter: {
+      debug: true,
+    },
   },
   scene: [Example],
 };
