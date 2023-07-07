@@ -1,53 +1,50 @@
-import { BackgroundTile } from "./shared";
+import { BackgroundTile, gameSettings } from "./shared";
 import Phaser from "phaser";
 
 export class ParallaxBackground extends Phaser.GameObjects.Group {
-  private _bg: Phaser.GameObjects.TileSprite;
-  private _far: Phaser.GameObjects.TileSprite;
-  private _close: Phaser.GameObjects.TileSprite;
+  // private _bg: Phaser.GameObjects.TileSprite;
+  // private _far: Phaser.GameObjects.TileSprite;
+  // private _close: Phaser.GameObjects.TileSprite;
 
-  constructor(scene: Phaser.Scene) {
-    const bg = scene.add.tileSprite(
-      0,
-      0,
-      Number(scene.game.config.width),
-      Number(scene.game.config.height),
-      BackgroundTile.Background
-    );
-    bg.setOrigin(0, 0);
-    bg.setScrollFactor(0);
+  private _layers: Phaser.GameObjects.TileSprite[];
+  private _layersCount: number;
 
-    const far = scene.add.tileSprite(
-      0,
-      0,
-      Number(scene.game.config.width),
-      Number(scene.game.config.height),
-      BackgroundTile.Far
-    );
-    far.setOrigin(0, 0);
-    far.setScrollFactor(0);
+  constructor(scene: Phaser.Scene, layers: string[]) {
+    const [background, ...rest] = layers;
 
-    const close = scene.add.tileSprite(
-      0,
-      0,
-      Number(scene.game.config.width),
-      Number(scene.game.config.height),
-      BackgroundTile.Close
-    );
-    close.setOrigin(0, 0);
-    close.setScrollFactor(0);
+    const spriteLayers = layers.map((layer, i) => {
+      const sprite = scene.add.tileSprite(
+        0,
+        i === 0 ? 0 : 2 * gameSettings.tileWidth,
+        Number(scene.game.config.width),
+        Number(scene.game.config.height),
+        layer
+      );
+      sprite.setOrigin(0, 0);
+      sprite.setScrollFactor(0);
 
-    super(scene, [bg, far, close]);
+      return sprite;
+    });
+
+    super(scene, spriteLayers);
+
+    this._layers = spriteLayers;
+    this._layersCount = spriteLayers.length;
 
     scene.add.existing(this);
 
-    this._bg = bg;
-    this._close = close;
-    this._far = far;
+    // this._bg = bg;
+    // this._close = close;
+    // this._far = far;
   }
 
   public updateBackgroundPosition(camera: Phaser.Cameras.Scene2D.Camera) {
-    this._far.tilePositionX = camera.scrollX * 0.4;
-    this._close.tilePositionX = camera.scrollX * 0.6;
+    this._layers.forEach((layer, index) => {
+      const offset = index / this._layersCount;
+
+      layer.tilePositionX = camera.scrollX * offset;
+    });
+    // this._far.tilePositionX = camera.scrollX * 0.4;
+    // this._close.tilePositionX = camera.scrollX * 0.6;
   }
 }
