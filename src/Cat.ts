@@ -91,7 +91,7 @@ export class Cat extends Phaser.Physics.Matter.Sprite {
       key: getAnimKeyForState(CatState.Spine),
       frames: this.anims.generateFrameNumbers(CatState.Spine),
       frameRate: 10,
-      repeat: -1,
+      repeat: 0,
     });
 
     this.anims.create({
@@ -240,6 +240,13 @@ export class Cat extends Phaser.Physics.Matter.Sprite {
     const spineAnimation = getAnimKeyForState(CatState.Spine);
 
     this._currentAnimation = this.anims.play(spineAnimation);
+
+    this._currentAnimation.off("animationcomplete");
+
+    this._currentAnimation.on("animationcomplete", () => {
+      this.changeState(CatState.Idle1);
+      this.anims.play(getAnimKeyForState(CatState.Idle1));
+    });
   }
 
   get catState() {

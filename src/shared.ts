@@ -18,10 +18,10 @@ export const backgroundTiles = Object.values(BackgroundTile);
 
 export const gameSettings = {
   playerSpeed: 1.5,
-  jumpForce: -0.2,
+  jumpForce: -0.25,
   attackForce: -0.015,
   catFriction: 0,
-  catFrictionAir: 0.05,
+  catFrictionAir: 0.1,
   catMass: 10,
   tileWidth: 16,
   width: 320,

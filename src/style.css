@@ -41,10 +41,7 @@ h1 {
   line-height: 1.1;
 }
 
-canvas {
-  /* width: 100vw !important; */
-  /* height: 100vh !important; */
-}
+
 
 body {
   display: flex;
