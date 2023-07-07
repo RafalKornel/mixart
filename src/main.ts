@@ -4,14 +4,8 @@ import { backgroundTiles, gameSettings } from "./shared";
 import { ParallaxBackground } from "./ParallaxBackground";
 import { Cat, CatState } from "./Cat";
 
-import VirtualJoystickPlugin from "phaser3-rex-plugins/plugins/virtualjoystick-plugin.js";
-import type VirtualJoyStick from "phaser3-rex-plugins/plugins/virtualjoystick";
-
 import "./style.css";
 import { Flower } from "./Flower";
-
-const getHasTouchControls = () =>
-  "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
 enum Scene {
   Example = "exampleScene",
@@ -22,10 +16,6 @@ class Example extends Phaser.Scene {
   private _cat!: Cat;
   private _parallax!: ParallaxBackground;
   private _flowers!: Flower[];
-
-  private _joystick!: VirtualJoyStick;
-
-  private _hasTouchControls!: boolean;
 
   constructor() {
     super(Scene.Example);
@@ -74,8 +64,6 @@ class Example extends Phaser.Scene {
   }
 
   create() {
-    this._hasTouchControls = getHasTouchControls();
-
     this._parallax = new ParallaxBackground(this, backgroundTiles);
 
     const map = this.make.tilemap({
@@ -155,10 +143,6 @@ class Example extends Phaser.Scene {
     );
 
     this.cameras.main.setBounds(0, 0, 1920, 240);
-
-    if (this._hasTouchControls) {
-      this.setupJoystick();
-    }
   }
 
   keyboardManager() {
@@ -187,55 +171,8 @@ class Example extends Phaser.Scene {
     }
   }
 
-  joystickManager() {
-    const joystickKeys = this._joystick.createCursorKeys();
-
-    if (joystickKeys.up.isDown) {
-      this._cat.jumpHandler();
-    }
-
-    if (joystickKeys.left.isDown) {
-      this._cat.moveLeftHandler(-gameSettings.playerSpeed);
-    } else if (joystickKeys.right.isDown) {
-      this._cat.moveRightHandler(gameSettings.playerSpeed);
-    } else if (joystickKeys.down.isDown) {
-      this._cat.spineHandler();
-    }
-
-    if (
-      joystickKeys.left.isUp &&
-      joystickKeys.right.isUp &&
-      this._cat.catState === CatState.Run
-    ) {
-      this._cat.idleHandler();
-    }
-  }
-
   movePlayerManager() {
-    if (this._hasTouchControls) {
-      this.joystickManager();
-    }
     this.keyboardManager();
-  }
-
-  setupJoystick() {
-    const plugin = new VirtualJoystickPlugin(this.plugins);
-
-    this.plugins.installScenePlugin(
-      "rexVirtualJoystick",
-      VirtualJoystickPlugin
-    );
-
-    const SIZE = 20;
-
-    this._joystick = plugin.add(this, {
-      y: gameSettings.height - SIZE * 2,
-      x: SIZE * 2,
-      radius: SIZE,
-      base: this.add.circle(0, 0, SIZE, 0x888888),
-      thumb: this.add.circle(0, 0, SIZE / 2, 0xcccccc),
-      enable: true,
-    });
   }
 
   update() {
@@ -265,11 +202,6 @@ const config: Phaser.Types.Core.GameConfig = {
     },
   },
   scene: [Example],
-  plugins: {
-    global: [
-      { key: "rexVirtualJoystick", plugin: VirtualJoystickPlugin, start: true },
-    ],
-  },
 };
 
 new Phaser.Game(config);
