@@ -21,4 +21,14 @@ export const gameSettings = {
   tileWidth: 16,
   width: 320,
   height: 240,
+
+  isFullscreen: true,
+  defaultWidth: 320 * 4,
+  defaultHeight: 240 * 4,
+  // gravity: 500,
+  // jumpVelocity: 450,
+  // strafeVelocity: 200,
+  // platformDistance: 110,
+  // platformOffset: 10,
+  joystickModifier: 4,
 };
