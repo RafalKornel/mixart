@@ -25,7 +25,6 @@ export class Cat extends Phaser.Physics.Matter.Sprite {
   private _isTouchingGround: boolean;
   private _state: CatState;
   private _currentAnimation: Phaser.GameObjects.GameObject;
-  private _animationContainer: Phaser.GameObjects.Container;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene.matter.world, x, y, CatState.Idle1, undefined, {
@@ -33,17 +32,9 @@ export class Cat extends Phaser.Physics.Matter.Sprite {
       mass: 1,
     });
 
-    // this.setOrigin(1.5, 1.5);
-
-    // this.setOrigin(0.5, 1);
-
     scene.add.existing(this);
 
     this.setFixedRotation();
-
-    this._animationContainer = scene.add.container(x, y);
-
-    // this._animationContainer.add(this);
 
     this.registerAnimations();
 
@@ -53,15 +44,11 @@ export class Cat extends Phaser.Physics.Matter.Sprite {
 
     this._isTouchingGround = false;
 
-    // this.setOnCollide(() => {
-    //   this._isTouchingGround = true;
-    // });
-
     scene.events.on("update", this.update, this);
   }
 
   registerAnimations() {
-    const idleAnim = this.anims.create({
+    this.anims.create({
       key: getAnimKeyForState(CatState.Idle1),
       frames: this.anims.generateFrameNumbers(CatState.Idle1),
       frameRate: 10,
@@ -209,8 +196,6 @@ export class Cat extends Phaser.Physics.Matter.Sprite {
       this.anims.play(getAnimKeyForState(CatState.Idle1));
     });
 
-    // console.log("here", this.state);
-    // this.isTouchingGround = false;
     this.applyForce(new Phaser.Math.Vector2(0, -0.02));
   }
 

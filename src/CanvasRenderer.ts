@@ -34,6 +34,7 @@ export abstract class CanvasRenderer {
     ctx.imageSmoothingEnabled = false;
 
     this.ctx = ctx;
+    console.log(this.raf);
   }
 
   public start() {

@@ -99,11 +99,11 @@ class Example extends Phaser.Scene {
 
     const groundLayer = map.createLayer("ground", tilesets, 0, 0)!;
 
-    const backgroundLayer = map.createLayer("background", tilesets, 0, 0)!;
+    map.createLayer("background", tilesets, 0, 0)!;
 
     const platformsLayer = map.createLayer("platforms", tilesets, 0, 0)!;
 
-    const furnitureLayer = map.createLayer("furniture", tilesets, 0, 0)!;
+    map.createLayer("furniture", tilesets, 0, 0)!;
 
     groundLayer.setCollisionByExclusion([-1], true);
     platformsLayer.setCollisionByExclusion([-1], true);
@@ -121,7 +121,6 @@ class Example extends Phaser.Scene {
 
     this._cursorKeys = this.input.keyboard?.createCursorKeys();
 
-    // [47, 6]
     const FIRST_SHELF = { x: 50, y: 6 };
     const SECOND_SHELF = { x: 45, y: 3 };
 
