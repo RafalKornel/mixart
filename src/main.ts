@@ -63,19 +63,6 @@ class Example extends Phaser.Scene {
       this.load.image(tile, `assets/Sunset/${tile}.png`);
     });
 
-    // this.load.image(
-    //   BackgroundTile.Background,
-    //   "assets/background/parallax-mountain-bg.png"
-    // );
-    // this.load.image(
-    //   BackgroundTile.Far,
-    //   "assets/background/parallax-mountain-far.png"
-    // );
-    // this.load.image(
-    //   BackgroundTile.Close,
-    //   "assets/background/parallax-mountain-mountains.png"
-    // );
-
     this.load.image(
       "bg_3",
       "assets/background/parallax-mountain-foreground-trees.png"
@@ -90,10 +77,6 @@ class Example extends Phaser.Scene {
   }
 
   create() {
-    // const background = this.add.image(-22, 0, "forest-background");
-    // background.setScrollFactor(0);
-    // background.setOrigin(0, 0);
-
     this._parallax = new ParallaxBackground(this, backgroundTiles);
 
     const map = this.make.tilemap({
@@ -229,23 +212,4 @@ const config = {
   scene: [Example],
 };
 
-const game = new Phaser.Game(config);
-
-// game.start();
-
-// html`
-//   <select
-//     @change="${(e: any) => {
-//       const v = Number(e.target.value);
-
-//       if (!isNaN(v) && CAT_STATE_VALUES.includes(v)) {
-//         game.changeCatState(v);
-//       }
-//     }}"
-//   >
-//     ${CAT_STATE_KEYS.map(
-//       (key, value) =>
-//         html`<option value="${CAT_STATE_VALUES[value]}">${key}</option>`
-//     )}
-//   </select>
-// `(document.querySelector("#animation-select")!);
+new Phaser.Game(config);

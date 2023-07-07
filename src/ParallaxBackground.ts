@@ -1,17 +1,11 @@
-import { BackgroundTile, gameSettings } from "./shared";
+import { gameSettings } from "./shared";
 import Phaser from "phaser";
 
 export class ParallaxBackground extends Phaser.GameObjects.Group {
-  // private _bg: Phaser.GameObjects.TileSprite;
-  // private _far: Phaser.GameObjects.TileSprite;
-  // private _close: Phaser.GameObjects.TileSprite;
-
   private _layers: Phaser.GameObjects.TileSprite[];
   private _layersCount: number;
 
   constructor(scene: Phaser.Scene, layers: string[]) {
-    const [background, ...rest] = layers;
-
     const spriteLayers = layers.map((layer, i) => {
       const sprite = scene.add.tileSprite(
         0,
@@ -32,10 +26,6 @@ export class ParallaxBackground extends Phaser.GameObjects.Group {
     this._layersCount = spriteLayers.length;
 
     scene.add.existing(this);
-
-    // this._bg = bg;
-    // this._close = close;
-    // this._far = far;
   }
 
   public updateBackgroundPosition(camera: Phaser.Cameras.Scene2D.Camera) {
@@ -44,7 +34,5 @@ export class ParallaxBackground extends Phaser.GameObjects.Group {
 
       layer.tilePositionX = camera.scrollX * offset;
     });
-    // this._far.tilePositionX = camera.scrollX * 0.4;
-    // this._close.tilePositionX = camera.scrollX * 0.6;
   }
 }
