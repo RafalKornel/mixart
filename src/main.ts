@@ -9,12 +9,9 @@ import type VirtualJoyStick from "phaser3-rex-plugins/plugins/virtualjoystick";
 
 import "./style.css";
 import { Flower } from "./Flower";
-import { MyButton } from "./MyButton";
 
 const getHasTouchControls = () =>
   "ontouchstart" in window || navigator.maxTouchPoints > 0;
-// navigator.msMaxTouchPoints > 0
-// window.matchMedia("(pointer: coarse)").matches;
 
 enum Scene {
   Example = "exampleScene",
@@ -26,11 +23,7 @@ class Example extends Phaser.Scene {
   private _parallax!: ParallaxBackground;
   private _flowers!: Flower[];
 
-  private windowWidth!: number;
-  private windowHeight!: number;
-
   private _joystick!: VirtualJoyStick;
-  private _button!: MyButton;
 
   private _hasTouchControls!: boolean;
 
@@ -71,22 +64,9 @@ class Example extends Phaser.Scene {
 
     this.load.tilemapTiledJSON("map", "assets/terrain/terrain.json");
 
-    // this.load.image(
-    //   "forest-background",
-    //   "assets/background/forest-background.png"
-    // );
-
     backgroundTiles.forEach((tile) => {
       this.load.image(tile, `assets/Sunset/${tile}.png`);
     });
-
-    // this.load.image(
-    //   "bg_3",
-    //   "assets/background/parallax-mountain-foreground-trees.png"
-    // );
-    // this.load.image("bg_5", "assets/background/parallax-trees.png");
-
-    // this.load.image("armchair", "assets/armchair.png");
 
     [1, 2, 3, 4, 5, 6].forEach((i) => {
       this.load.image(`flower${i}`, `assets/flowers/flower${i}.png`);
@@ -94,20 +74,7 @@ class Example extends Phaser.Scene {
   }
 
   create() {
-    // this._hasTouchControls =
-    // "ontouchstart" in window || navigator.maxTouchPoints > 0;
-    // navigator.msMaxTouchPoints > 0;
     this._hasTouchControls = getHasTouchControls();
-    ///window.matchMedia("(pointer: coarse)").matches;
-    // this._hasTouchControls = true;
-
-    this.windowHeight = gameSettings.isFullscreen
-      ? window.innerHeight
-      : gameSettings.defaultHeight;
-
-    this.windowWidth = gameSettings.isFullscreen
-      ? window.innerWidth
-      : gameSettings.defaultWidth;
 
     this._parallax = new ParallaxBackground(this, backgroundTiles);
 
@@ -205,13 +172,9 @@ class Example extends Phaser.Scene {
       this._cat.moveLeftHandler(-gameSettings.playerSpeed);
     } else if (this._cursorKeys.right.isDown) {
       this._cat.moveRightHandler(gameSettings.playerSpeed);
-    }
-
-    if (this._cursorKeys.space.isDown) {
+    } else if (this._cursorKeys.space.isDown) {
       this._cat.attackHandler(this._flowers);
-    }
-
-    if (this._cursorKeys.down.isDown) {
+    } else if (this._cursorKeys.down.isDown) {
       this._cat.spineHandler();
     }
 
@@ -227,8 +190,6 @@ class Example extends Phaser.Scene {
   joystickManager() {
     const joystickKeys = this._joystick.createCursorKeys();
 
-    // if (!this._cursorKeys) return;
-
     if (joystickKeys.up.isDown) {
       this._cat.jumpHandler();
     }
@@ -237,13 +198,7 @@ class Example extends Phaser.Scene {
       this._cat.moveLeftHandler(-gameSettings.playerSpeed);
     } else if (joystickKeys.right.isDown) {
       this._cat.moveRightHandler(gameSettings.playerSpeed);
-    }
-
-    // if (joystickKeys.space.isDown) {
-    //   this._cat.attackHandler(this._flowers);
-    // }
-
-    if (joystickKeys.down.isDown) {
+    } else if (joystickKeys.down.isDown) {
       this._cat.spineHandler();
     }
 
@@ -259,13 +214,8 @@ class Example extends Phaser.Scene {
   movePlayerManager() {
     if (this._hasTouchControls) {
       this.joystickManager();
-      // touchscreen
     }
     this.keyboardManager();
-    // if (this.)
-    // const joystickKeys = this._joystick.createCursorKeys();
-
-    // if (!this._cursorKeys) return;
   }
 
   setupJoystick() {
@@ -280,27 +230,12 @@ class Example extends Phaser.Scene {
 
     this._joystick = plugin.add(this, {
       y: gameSettings.height - SIZE * 2,
-      // x: -100,
       x: SIZE * 2,
       radius: SIZE,
       base: this.add.circle(0, 0, SIZE, 0x888888),
       thumb: this.add.circle(0, 0, SIZE / 2, 0xcccccc),
-      // dir: "8dir", // 'up&down'|0|'left&right'|1|'4dir'|2|'8dir'|3
-      // forceMin: 40,
       enable: true,
     });
-
-    // this._button = new MyButton(this, 100, 100, 30, () => {
-    //   this._cat.attackHandler(this._flowers);
-    // });
-
-    // this.add.existing(button);
-    // button.onPressed = () => {
-    //   console.log("BUTTON IS BEING PRESSED");
-    // };
-    // button.onReleased = () => {
-    //   console.log("BUTTON WAS RELEASED");
-    // };
   }
 
   update() {
@@ -309,10 +244,8 @@ class Example extends Phaser.Scene {
   }
 }
 
-const config = {
+const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
-  // width: getHasTouchControls() ? window.innerWidth : gameSettings.width,
-  // height: getHasTouchControls() ? window.innerHeight : gameSettings.height,
   width: gameSettings.width,
   height: gameSettings.height,
   backgroundColor: "#000",
@@ -323,6 +256,12 @@ const config = {
     default: "matter",
     matter: {
       // debug: true,
+      setBounds: {
+        x: 0,
+        y: 0,
+        width: 1920,
+        height: 320,
+      },
     },
   },
   scene: [Example],

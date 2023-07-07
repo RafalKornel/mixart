@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { Flower } from "./Flower";
+import { gameSettings } from "./shared";
 
 export enum CatState {
   Idle1 = "Idle1",
@@ -22,14 +23,16 @@ export class Cat extends Phaser.Physics.Matter.Sprite {
   static SIZE = 12;
   static ATTACT_MIN_DIST = 1.5;
 
-  private _isTouchingGround: boolean;
-  private _state: CatState;
+  private _collision?: Phaser.Types.Physics.Matter.MatterCollisionData;
+  private _catState: CatState;
   private _currentAnimation: Phaser.GameObjects.GameObject;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene.matter.world, x, y, CatState.Idle1, undefined, {
-      friction: 0.5,
-      mass: 1,
+      circleRadius: Cat.SIZE / 2,
+      friction: gameSettings.catFriction,
+      frictionAir: gameSettings.catFrictionAir,
+      mass: gameSettings.catMass,
     });
 
     scene.add.existing(this);
@@ -38,13 +41,27 @@ export class Cat extends Phaser.Physics.Matter.Sprite {
 
     this.registerAnimations();
 
-    this._state = INITIAL_STATE;
+    this._catState = INITIAL_STATE;
 
     this._currentAnimation = this.anims.play(getAnimKeyForState(INITIAL_STATE));
 
-    this._isTouchingGround = false;
+    this.handleCollision = this.handleCollision.bind(this);
+
+    this.setOnCollideActive(this.handleCollision);
+
+    this.setOnCollideEnd(() => {
+      this._collision = undefined;
+    });
 
     scene.events.on("update", this.update, this);
+  }
+
+  handleCollision({
+    collision,
+  }: {
+    collision: Phaser.Types.Physics.Matter.MatterCollisionData;
+  }) {
+    this._collision = collision;
   }
 
   registerAnimations() {
@@ -80,7 +97,7 @@ export class Cat extends Phaser.Physics.Matter.Sprite {
     this.anims.create({
       key: getAnimKeyForState(CatState.Jump),
       frames: this.anims.generateFrameNumbers(CatState.Jump),
-      frameRate: 10,
+      frameRate: 11,
       repeat: 0,
     });
   }
@@ -101,18 +118,16 @@ export class Cat extends Phaser.Physics.Matter.Sprite {
     if (smallestDist <= Cat.SIZE * Cat.ATTACT_MIN_DIST) {
       const flower = flowers[indexOfClosest];
 
-      const ATTACK_MODIFIER = -0.025;
-
       flower.applyForce(
-        new Phaser.Math.Vector2(0, Phaser.Math.FloatBetween(0, 1)).scale(
-          ATTACK_MODIFIER
+        new Phaser.Math.Vector2(0, Phaser.Math.FloatBetween(0.5, 1)).scale(
+          gameSettings.attackForce
         )
       );
     }
   }
 
   attackHandler(flowers: Flower[]) {
-    if (this.catState === CatState.Tap) return;
+    if (this._catState !== CatState.Idle1) return;
 
     this.changeState(CatState.Tap);
 
@@ -143,14 +158,23 @@ export class Cat extends Phaser.Physics.Matter.Sprite {
   }
 
   changeState(state: CatState) {
-    this._state = state;
+    this._catState = state;
   }
 
   moveLeftHandler(playerSpeed: number) {
+    if (
+      this._catState === CatState.Jump &&
+      this._collision &&
+      this._collision.normal.x !== 0
+    ) {
+      return;
+    }
     this.setVelocityX(playerSpeed);
+
     this.setFlipX(true);
 
-    if (this._state === CatState.Run || this._state === CatState.Jump) return;
+    if (this._catState === CatState.Run || this._catState === CatState.Jump)
+      return;
 
     this.changeState(CatState.Run);
 
@@ -160,10 +184,19 @@ export class Cat extends Phaser.Physics.Matter.Sprite {
   }
 
   moveRightHandler(playerSpeed: number) {
+    if (
+      this._catState === CatState.Jump &&
+      this._collision &&
+      this._collision.normal.x !== 0
+    ) {
+      return;
+    }
     this.setVelocityX(playerSpeed);
+
     this.setFlipX(false);
 
-    if (this._state === CatState.Run || this._state === CatState.Jump) return;
+    if (this._catState === CatState.Run || this._catState === CatState.Jump)
+      return;
 
     this.changeState(CatState.Run);
 
@@ -181,7 +214,7 @@ export class Cat extends Phaser.Physics.Matter.Sprite {
   }
 
   jumpHandler() {
-    if (this._state === CatState.Jump) return;
+    if (this._catState === CatState.Jump) return;
 
     this.changeState(CatState.Jump);
 
@@ -196,11 +229,11 @@ export class Cat extends Phaser.Physics.Matter.Sprite {
       this.anims.play(getAnimKeyForState(CatState.Idle1));
     });
 
-    this.applyForce(new Phaser.Math.Vector2(0, -0.02));
+    this.applyForce(new Phaser.Math.Vector2(0, gameSettings.jumpForce));
   }
 
   spineHandler() {
-    if (this._state === CatState.Spine) return;
+    if (this._catState !== CatState.Idle1) return;
 
     this.changeState(CatState.Spine);
 
@@ -210,14 +243,6 @@ export class Cat extends Phaser.Physics.Matter.Sprite {
   }
 
   get catState() {
-    return this._state;
-  }
-
-  get isTouchingGround() {
-    return this._isTouchingGround;
-  }
-
-  set isTouchingGround(val: boolean) {
-    this._isTouchingGround = val;
+    return this._catState;
   }
 }

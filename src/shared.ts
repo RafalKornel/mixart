@@ -17,7 +17,12 @@ export enum BackgroundTile {
 export const backgroundTiles = Object.values(BackgroundTile);
 
 export const gameSettings = {
-  playerSpeed: 2,
+  playerSpeed: 1.5,
+  jumpForce: -0.2,
+  attackForce: -0.015,
+  catFriction: 0,
+  catFrictionAir: 0.05,
+  catMass: 10,
   tileWidth: 16,
   width: 320,
   height: 240,
@@ -30,5 +35,5 @@ export const gameSettings = {
   // strafeVelocity: 200,
   // platformDistance: 110,
   // platformOffset: 10,
-  joystickModifier: 4,
+  // joystickModifier: 0.1,
 };
