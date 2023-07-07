@@ -260,9 +260,8 @@ class Example extends Phaser.Scene {
     if (this._hasTouchControls) {
       this.joystickManager();
       // touchscreen
-    } else {
-      this.keyboardManager();
     }
+    this.keyboardManager();
     // if (this.)
     // const joystickKeys = this._joystick.createCursorKeys();
 
